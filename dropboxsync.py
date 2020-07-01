@@ -71,7 +71,7 @@ class DropboxSync(object):
 
     def listLocalFiles(self):
         self.logger.debug('Getting list of local files...')
-        locList = [unicodedata.normalize('NFC', f.decode('utf-8')) for f in os.listdir(self.localDir) if os.path.isfile(os.path.join(self.localDir,f))]
+        locList = [unicodedata.normalize('NFC', f) for f in os.listdir(self.localDir) if os.path.isfile(os.path.join(self.localDir,f))]
         self.locList = [self.filterItemByLocal(f) for f in locList]
         self.logger.debug('Local files:%s' % len(self.locList))
         return True
@@ -102,7 +102,7 @@ class DropboxSync(object):
         while '//' in result:
             result = result.replace('//', '/')
         result = result.rstrip('/')
-        result = unicodedata.normalize('NFC', result.decode('utf-8'))
+        result = unicodedata.normalize('NFC', result)
         return result
 
     # filtration
@@ -223,6 +223,7 @@ class DropboxSync(object):
         fileName = fileItem.fileName
         dbItem = next((f for f in self.dbList if f.fileName == fileName), None)
         dbPath = os.path.join(self.dropboxDir, fileName)
+        dbPath = dbPath.replace('\\','/')
         locPath = os.path.join(self.localDir, fileName)
         self.logger.debug('Downloading %s (%d bytes) ...' % (fileName, dbItem.fileSize))
         with self.stopwatch('downloading'):
