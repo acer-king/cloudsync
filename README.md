@@ -1,4 +1,4 @@
-Sync files to/from Dropbox folder
+Acer Sync files to/from Dropbox folder
 =================================
 
 The script `cloudsync.py` uses Dropbox API v2 (https://github.com/dropbox/dropbox-sdk-python) to synchronize files between local and Dropbox folders  
