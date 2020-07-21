@@ -8,7 +8,7 @@ import dropbox
 from dropbox.files import FileMetadata, FolderMetadata
 import os
 import time
-import filters
+from cloudsync import filters
 import unicodedata
 
 class DropboxSync(object):
@@ -16,12 +16,17 @@ class DropboxSync(object):
     Class to help synchronize files to/from dropbox
     use Dropbox API v2 (https://github.com/dropbox/dropbox-sdk-python)
     """
-    def __init__(self, args):
-        self.args=args
+    def __init__(self, remotefolder='',localdir='',toDropbox=False,access_token=''):
+        self.args={}
+        self.args['dropboxdir'] = remotefolder
+        self.args['localdir'] = localdir
+        self.args['direction'] = 'todropbox'
+        self.args['token'] = access_token
         self.dbx = None
-        self.localDir = self.normalizeDir(args['localdir'])
-        self.dropboxDir = self.normalizeDir(args['dropboxdir'])
-        self.directionToDb = args['direction'] == 'todropbox'
+        self.localDir = self.normalizeDir(self.args['localdir'])
+        self.dropboxDir = self.normalizeDir(self.args['dropboxdir'])
+        self.directionToDb = toDropbox#self.args['direction'] == 'todropbox'
+        
 
         self.timeoutSec = 2 * 60
         self.logger = logging.getLogger(__name__)
@@ -117,12 +122,13 @@ class DropboxSync(object):
         resFiles = self.filterItems
         sourceCount = len(resFiles)
         self.logger.debug('Source files:%s' % (len(resFiles)))
-        for fltr in filters:
-            prevCount = len(resFiles)
-            resFiles = fltr.filterFiles(resFiles)
-            resCount = len(resFiles)
-            if resCount != prevCount:
-                self.logger.debug('Filter \'%s\': %s -> %s' % (fltr.__class__.__name__, prevCount, resCount))
+        if filters is not None:
+            for fltr in filters:
+                prevCount = len(resFiles)
+                resFiles = fltr.filterFiles(resFiles)
+                resCount = len(resFiles)
+                if resCount != prevCount:
+                    self.logger.debug('Filter \'%s\': %s -> %s' % (fltr.__class__.__name__, prevCount, resCount))
         self.sourceFilesMatched = resFiles
         self.logger.info('--- Filter source files: %d -> %d' % (sourceCount, len(resFiles)))
 
